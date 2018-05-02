@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *" />
+    <link rel="stylesheet" type="text/css" href="css/styleindex.css">
+    <title>Encontre sua Sala</title>
+</head>
+<body>
+	<!--Inicio do formulario -->
+	<form>
+		<!--logo do app -->
+		<div class="logop"> 
+			<img class="logo" src="img/LogoUNIP.gif" >
+		</div>
+
+		<!--Ocultar select após pressionar "Localizar"-->
+		<div id="Selects">
+			<!-- Cursos -->
+			<select name="curso" id="curso">
+				<option selected hidden>Selecione o Curso</option>
+				<option disabled>::|Cursos Superiores Tradicionais|::</option>
+				<option>Administracao</option>
+				<option>Adm de Empresas</option>
+				<option>Arquitetura e Urbanismo</option>
+				<option>Biomedicina</option>
+				<option>Ciencias Biologicas</option>
+				<option>Ciencia da Computacao</option>
+				<option>Ciencias Contabeis</option>
+				<option>Com.Social(Prop.e Public. e Jornalismo)</option>
+				<option>Direito</option>
+				<option>Educacao Fisica</option>
+				<option>Enfermagem</option>
+				<option>Engenharia Basica</option>
+				<option>Engenharias</option>
+				<option>Estetica e Cosmetica</option>
+				<option>Farmacia</option>
+				<option>Fisioterapia</option>
+				<option>Letras</option>
+				<option>Matematica</option>
+				<option>Nutricao</option>
+				<option>Pedagogia</option>
+				<option>Psicologia</option>
+				<option>Radiologia Medica</option>
+				<option>Serviço Social</option>
+				<option>Fotografia e Design Grafico</option>
+				<option disabled>::|Cursos Superiores Tecnológicos|::</option>
+				<option>Analise e Desenvolvimento de Sistemas</option>
+				<option>Automacao Industrial</option>
+				<option>Gestao Qualidade</option>
+				<option>Gestao Financeiro</option>
+				<option>Logistica</option>
+				<option>Processos</option>
+				<option>Gestao Recursos Humanos</option>
+			</select><br><br>
+
+			<!-- Periodos serão exibidos após selecionar curso-->
+			<select name="periodo" id="periodo">
+				<option selected hidden>Selecione o periodo</option>
+			</select><br><br>
+
+			<!--Semestre serão exibisdo após selecionar periodo-->
+			<select name="semestre" id="semestre">
+				<option selected hidden>Selecione o semestre</option>
+			</select><br><br><br>
+		</div>
+
+		<!--Botão Localizar-->
+		<button name="bntPesq" class="btnPesq" onclick="SwitchButtons('btnPesquisar');" type="button" id="btnPesquisar" disabled="disabled" >Localizar</button>
+
+		<!--Exibi resultado do após clicar em "Localizar"-->
+		<div class="resultado">
+
+		</div>
+
+		<!--Botão para nova consulta-->
+		<button name="btnRef" class="btnRef" onclick="SwitchButtons('btnRefresh');" window.location.href = 'http://192.168.0.5:3000/'  id="btnRefresh"  style='display:none;'>Nova busca</button><br>	
+
+	</form>
+	<!--Fim do formulario-->
+	
+<script src="js/jquery.min.js"></script>
+
+<!--Inicio da função para carregar os option após a seleção do curso -->
+<script>
+	function buscaPeriodo() {
+		$.getJSON('http://localhost/projetoBuscaSalaLocal/www/periodo.php', {curso: $('#curso').val()}, function (data) {
+			var select = $('#periodo');
+			var options = select.prop('options');
+			$.each(data, function (index, array) {
+				options[options.length] = new Option(array['periodo']);
+			});
+		});
+	}
+	buscaPeriodo();
+	$('#curso').change(function () {
+		buscaPeriodo();
+	});
+
+	function buscaSemestre() {
+		$.getJSON('http://localhost/projetoBuscaSalaLocal/www/semestre.php', {curso: $('#curso').val()}, function (data) {
+			var select = $('#semestre');
+			var options = select.prop('options');
+			$.each(data, function (index, array) {
+				options[options.length] = new Option(array['semestre']);
+			});
+		});
+	}
+	buscaSemestre();
+	$('#curso').change(function () {
+		buscaSemestre();
+	});	
+</script>
+<!--Fim da função-->
+
+<!--Inicio da função para carregar resultado após clicar em localizar -->
+<script>
+	$(function(){
+		$("#btnPesquisar").click(function(){
+			var semestre = $("#semestre").val();
+	 		var periodo = $("#periodo").val();
+	 		var curso = $("#curso").val();
+	 		$.post("http://localhost/projetoBuscaSalaLocal/www/ajax.php", {curso:curso, periodo:periodo, semestre:semestre}, function(retorno){
+	 			$(".resultado").html("<b>Localização da sala:<br><br> " + retorno + "</b>");
+	 			if (retorno == false) {
+	 				$(".resultado").html("<b>Dados do curso não localizados !<br><br>");
+	 			}
+	 		});		
+		})
+	});
+</script>
+<!--Fim da função-->
+
+<!--Inicio da função para ocultar Botão Localizar após clicar -->
+<script>
+	function SwitchButtons(buttonId) {
+	  var hideBtn, showBtn, menuToggle;
+	  if (buttonId == 'btnPesquisar') {
+		showBtn = 'btnRefresh';
+		hideBtn = 'btnPesquisar';
+	  } else {
+		showBtn = 'btnPesquisar';
+		hideBtn = 'btnRefresh';
+	  }
+		  document.getElementById(hideBtn).style.display = 'none'; //step 2 :additional feature hide button
+		  document.getElementById(showBtn).style.display = ''; //step 3:additional feature show button
+}
+</script>
+<!--Fim da função-->
+
+<!--Inicio da função para ocultar os select option após clicar em localizar-->
+<script>
+$(document).ready(function(){
+			$('#curso').change(function(){
+				var val = $('#curso').val();
+			$('#periodo').change(function(){
+				var val = $('#periodo').val();
+			$('#semestre').change(function(){
+				var val = $('#semestre').val();
+
+				if (val == '') {
+					$('#btnPesquisar').Attr('disabled', 'disabled');
+					}
+					else{
+					$('#btnPesquisar').removeAttr('disabled');
+				}
+			});
+		});
+	});
+});
+</script>
+<!--Fim da função-->
+
+<!--inicio da função para exibir selects em sequencia ex: Primeiro o curso, após isso exibe o select do periodo ...-->
+<script> 
+	$(document).ready(function(){
+		$('#btnPesquisar').click(function(){	
+		$('#Selects').children().attr('hidden', 'hidden');
+		});
+	}); 
+	
+	$(document).ready(function(){
+		$('#btnPesquisar').click(function(){	
+			$('#Selects').children().attr('hidden', 'hidden');
+		});
+	}); 
+
+	$(function() {
+		$('#btnPesquisar').click(function() {
+			$('#curso').hide();
+		 	$('#periodo').hide();
+		 	$('#semestre').hide();
+		});
+	}); 
+
+$(function() {
+    $('#periodo').hide(); 
+    $('#curso').change(function(){
+        if($('#curso').val()) {
+            $('#periodo').show(); 
+        } else {
+            $('#periodo').hide(); 
+        } 
+    });
+});
+
+$(function() {
+    $('#semestre').hide(); 
+    $('#periodo').change(function(){
+        if($('#periodo').val()) {
+            $('#semestre').show(); 
+        } else {
+            $('#semestre').hide(); 
+        } 
+    });
+});
+</script>
+<!--Fim da função-->
+</body>
+</html>
